@@ -1,0 +1,55 @@
+plugins {
+    id 'kotlin-platform-jvm'
+    id "org.jetbrains.kotlin.plugin.allopen"
+    id "me.champeau.gradle.jmh"
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-reflect"
+    expectedBy parent
+    testCompile "junit:junit:4.12"
+    testCompile "org.jetbrains.kotlin:kotlin-test"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit"
+}
+
+sourceSets.main.java.srcDirs = []
+sourceSets.test.java.srcDirs = []
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.allWarningsAsErrors = true
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+
+sourceCompatibility = 1.8
+targetCompatibility = sourceCompatibility
+
+allOpen {
+    annotations(
+            "org.openjdk.jmh.annotations.BenchmarkMode",
+            "org.openjdk.jmh.annotations.State"
+    )
+    // annotations("com.another.Annotation", "com.third.Annotation")
+}
+
+jmh {
+    warmupIterations = 1
+    warmup = '1s'
+
+    iterations = 10
+    timeOnIteration = '1s'
+
+    fork = 3
+    batchSize = 1
+
+    timeUnit = 'us'
+
+    benchmarkMode = ['all']
+}
+
+
