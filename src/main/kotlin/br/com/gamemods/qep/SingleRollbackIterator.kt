@@ -1,6 +1,6 @@
 package br.com.gamemods.qep
 
-open class SingleRollbackIterator<T : Any>(protected val input: Iterator<T>) : Iterator<T> {
+internal open class SingleRollbackIterator<T : Any>(protected val input: Iterator<T>) : Iterator<T> {
     private lateinit var read: T
     private var rollback = false
 

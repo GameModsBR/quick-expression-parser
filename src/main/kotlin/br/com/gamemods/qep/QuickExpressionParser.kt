@@ -1,26 +1,20 @@
 package br.com.gamemods.qep
 
-fun Iterator<Char>.parseExpression(vararg context: Pair<String, Any>): String = parseExpression(context.toMap())
-fun Iterable<Char>.parseExpression(vararg context: Pair<String, Any>): String = iterator().parseExpression(*context)
-fun CharSequence.parseExpression(vararg context: Pair<String, Any>): String = iterator().parseExpression(*context)
-
-
 fun Iterator<Char>.parseExpression(context: Map<String, Any>): String {
     return StringBuilder().also {
         readRaw(null, SingleRollbackIterator(this), it, ExpressionContext(context))
     }.toString()
 }
-fun Iterable<Char>.parseExpression(context: Map<String, Any>): String = iterator().parseExpression(context)
-fun CharSequence.parseExpression(context: Map<String, Any>): String = iterator().parseExpression(context)
-
 fun Iterator<Char>.parseExpression(context: ParameterProvider): String {
     return StringBuilder().also {
         readRaw(null, SingleRollbackIterator(this), it, ExpressionContext(context))
     }.toString()
 }
-fun Iterable<Char>.parseExpression(context: ParameterProvider): String = iterator().parseExpression(context)
-fun CharSequence.parseExpression(context: ParameterProvider): String = iterator().parseExpression(context)
 
+private const val EXPECT_IDENTIFIER = 0x1
+private const val EXPECT_OPERATOR = 0x2
+private const val EXPECT_QUESTION = 0x4
+private const val EXPECT_STRING = 0x8
 
 @Suppress("UNUSED_PARAMETER")
 private fun readExpression(
@@ -30,58 +24,50 @@ private fun readExpression(
     open?.let { fullExpression.append(it) }
 
     val tokens = mutableListOf<Any>()
-    /**
-     * Bits:
-     * 0x1: Esperando identificador
-     * 0x2: Esperando operador
-     * 0x4: Habilita operador '?'
-     * 0x8: Habilita o operador ':'
-     * 0x10: Habilita string literal
-     */
-    var state = 0x1
+    var state = EXPECT_IDENTIFIER
+    var ifCount = 0
 
     input@
     for (char in input) {
         fullExpression.append(char)
-        if (char.isWhitespace()) {
-            // Não faz nada por enquanto
-        } else when (char) {
+        when (char) {
             in 'a'..'z', in 'A'..'Z' -> {
-                if (state and 0x1 == 0) {
+                if (state and EXPECT_IDENTIFIER == 0) {
                     output.append(fullExpression)
                     return false
                 }
 
                 val identifier = readIdentifier(input, char).also { fullExpression.append(it, 1, it.length) }
                 tokens += identifier
-                state = state xor (0x1 + 0x10) or (0x2 + 0x4)
+                state = EXPECT_OPERATOR + EXPECT_QUESTION
             }
             '.' -> {
-                if (state and 0x2 == 0) {
+                if (state and EXPECT_OPERATOR == 0) {
                     output.append(fullExpression)
                     return false
                 }
                 tokens += char
-                state = state xor (0x2 + 0x4) or 0x1
+                state = EXPECT_IDENTIFIER
             }
             '?' -> {
-                if (state and 0x4 == 0) {
+                if (state and EXPECT_QUESTION == 0) {
                     output.append(fullExpression)
                     return false
                 }
                 tokens += char
-                state = state xor 0x4 or (0x1 + 0x8 +0x10)
+                state = EXPECT_IDENTIFIER + EXPECT_STRING
+                ifCount++
             }
             ':' -> {
-                if (state and 0x8 == 0) {
+                if (ifCount-- == 0 || state and EXPECT_QUESTION == 0) {
                     output.append(fullExpression)
                     return false
                 }
                 tokens += char
-                state = state xor 0x8 or (0x1 + 0x10)
+                state = EXPECT_IDENTIFIER + EXPECT_STRING
             }
             '\'', '"' -> {
-                if (state and 0x10 == 0) {
+                if (state and EXPECT_STRING == 0) {
                     output.append(fullExpression)
                     return false
                 }
@@ -100,13 +86,17 @@ private fun readExpression(
 
                 fullExpression.append(content).append(stringClose)
                 tokens += content
-                state = 0x8
+                state = EXPECT_QUESTION
             }
             close -> break@input
+            else -> if (!char.isWhitespace()) {
+                output.append(fullExpression)
+                return false
+            }
         }
     }
 
-    if (state and (0x2 + 0x4) != (0x2 + 0x4) && state != 0x8) {
+    if (state and EXPECT_QUESTION == 0) {
         output.append(fullExpression)
         return false
     }
@@ -124,6 +114,10 @@ private fun readExpression(
         return value != null
     }
 
+    return executeExpression(context, tokens, output, fullExpression)
+}
+
+private fun executeExpression(context: ExpressionContext, tokens: MutableList<Any>, output: StringBuilder, fullExpression: StringBuilder): Boolean {
     val stack = mutableListOf<Any?>(context)
     val iterator = tokens.iterator()
     tokenScan@
@@ -141,7 +135,7 @@ private fun readExpression(
             }
 
             '?' -> {
-                if(!(stack.removeLast() as Parameter).value.toBoolean()) {
+                if (!(stack.removeLast() as Parameter).value.toBoolean()) {
                     var questionMarks = 1
                     skip@
                     for (skipped in iterator) {
