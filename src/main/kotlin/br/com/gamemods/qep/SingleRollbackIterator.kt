@@ -9,8 +9,11 @@ internal open class SingleRollbackIterator<T : Any>(protected val input: Iterato
     }
 
     override fun next(): T {
-        return if (rollback) read.also { rollback = false }
-        else input.next().also { read = it }
+        return if (rollback) {
+            read.also { rollback = false }
+        } else {
+            input.next().also { read = it }
+        }
     }
 
     open fun rollback() {

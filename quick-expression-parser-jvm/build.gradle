@@ -14,7 +14,7 @@ dependencies {
 }
 
 sourceSets.main.java.srcDirs = []
-sourceSets.test.java.srcDirs = []
+//sourceSets.test.java.srcDirs = []
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

@@ -1,15 +1,10 @@
+@file:JvmName("QuickExpressionLexer")
+
 package br.com.gamemods.qep
 
-fun Iterator<Char>.parseExpression(context: Map<String, Any>): String {
-    return StringBuilder().also {
-        readRaw(null, SingleRollbackIterator(this), it, ExpressionContext(context))
-    }.toString()
-}
-fun Iterator<Char>.parseExpression(context: ParameterProvider): String {
-    return StringBuilder().also {
-        readRaw(null, SingleRollbackIterator(this), it, ExpressionContext(context))
-    }.toString()
-}
+import kotlin.jvm.JvmName
+
+
 
 private const val EXPECT_IDENTIFIER = 0x1
 private const val EXPECT_OPERATOR = 0x2
@@ -117,7 +112,12 @@ private fun readExpression(
     return executeExpression(context, tokens, output, fullExpression)
 }
 
-private fun executeExpression(context: ExpressionContext, tokens: MutableList<Any>, output: StringBuilder, fullExpression: StringBuilder): Boolean {
+private fun executeExpression(
+        context: ExpressionContext,
+        tokens: MutableList<Any>,
+        output: StringBuilder,
+        fullExpression: StringBuilder
+): Boolean {
     val stack = mutableListOf<Any?>(context)
     val iterator = tokens.iterator()
     tokenScan@
@@ -191,7 +191,12 @@ private fun readIdentifier(input: SingleRollbackIterator<Char>, output: StringBu
     }
 }
 
-private fun readContext(from: Char?, input: SingleRollbackIterator<Char>, output: StringBuilder, context: ExpressionContext) {
+private fun readContext(
+        from: Char?,
+        input: SingleRollbackIterator<Char>,
+        output: StringBuilder,
+        context: ExpressionContext
+) {
     if (!input.hasNext()) {
         output.append(from ?: return)
         return
@@ -220,7 +225,12 @@ private fun readEscaped(from: Char?, input: SingleRollbackIterator<Char>, output
     }
 }
 
-private fun readRaw(ending: Char?, input: SingleRollbackIterator<Char>, output: StringBuilder, context: ExpressionContext) {
+internal fun readRaw(
+        ending: Char?,
+        input: SingleRollbackIterator<Char>,
+        output: StringBuilder,
+        context: ExpressionContext
+) {
     input.forEach {
         when (it) {
             '#' -> readContext('#', input, output, context)

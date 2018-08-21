@@ -1,7 +1,19 @@
 package br.com.gamemods.qep
 
+/**
+ * Provides information about parameters dynamically.
+ */
 interface ParameterProvider {
+    /**
+     * Optionally returns the value from a given identifier.
+     * @return ´null´ if it was not found or not supported.
+     */
     fun getParameter(identifier: String): Any?
+
+    /**
+     * The String which is appended when this object is used directly without parameters.
+     * @return ´null´ if the default behavior must be applied.
+     */
     fun value(): String? = null
 }
 
