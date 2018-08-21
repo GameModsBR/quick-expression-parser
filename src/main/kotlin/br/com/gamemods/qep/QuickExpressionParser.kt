@@ -11,7 +11,6 @@ private const val EXPECT_OPERATOR = 0x2
 private const val EXPECT_QUESTION = 0x4
 private const val EXPECT_STRING = 0x8
 
-@Suppress("UNUSED_PARAMETER")
 private fun readExpression(
         open: String?, close: Char?,
         input: SingleRollbackIterator<Char>, output: StringBuilder, context: ExpressionContext): Boolean {
