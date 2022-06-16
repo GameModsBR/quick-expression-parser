@@ -1,5 +1,5 @@
 *.ipr
 *.iws
 .idea
-./build
-./.gradle
+build
+.gradle

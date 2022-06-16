@@ -5,7 +5,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
-import java.util.LinkedHashMap
 
 internal class MaxSizeHashMap<K, V>(private val maxSize: Int) : LinkedHashMap<K, V>() {
     override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>?): Boolean {

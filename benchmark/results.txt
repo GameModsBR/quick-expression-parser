@@ -1,0 +1,73 @@
+Benchmark                                                             Mode     Cnt      Score    Error   Units
+JMHTests.emptySubValue                                               thrpt      30      5,996 ±  0,334  ops/us
+JMHTests.filledSubValue                                              thrpt      30      3,126 ±  0,130  ops/us
+JMHTests.filledSubValueProvider                                      thrpt      30      2,616 ±  0,109  ops/us
+JMHTests.filledSubValueReflection                                    thrpt      30      0,030 ±  0,001  ops/us
+JMHTests.simpleExpression                                            thrpt      30      5,206 ±  0,220  ops/us
+JMHTests.simpleRead                                                  thrpt      30      3,017 ±  0,184  ops/us
+JMHTests.emptySubValue                                                avgt      30      0,173 ±  0,014   us/op
+JMHTests.filledSubValue                                               avgt      30      0,324 ±  0,023   us/op
+JMHTests.filledSubValueProvider                                       avgt      30      0,393 ±  0,021   us/op
+JMHTests.filledSubValueReflection                                     avgt      30     32,828 ±  0,757   us/op
+JMHTests.simpleExpression                                             avgt      30      0,197 ±  0,007   us/op
+JMHTests.simpleRead                                                   avgt      30      0,314 ±  0,014   us/op
+JMHTests.emptySubValue                                              sample  743198      0,218 ±  0,011   us/op
+JMHTests.emptySubValue:emptySubValue·p0.00                          sample              0,100            us/op
+JMHTests.emptySubValue:emptySubValue·p0.50                          sample              0,200            us/op
+JMHTests.emptySubValue:emptySubValue·p0.90                          sample              0,200            us/op
+JMHTests.emptySubValue:emptySubValue·p0.95                          sample              0,300            us/op
+JMHTests.emptySubValue:emptySubValue·p0.99                          sample              0,700            us/op
+JMHTests.emptySubValue:emptySubValue·p0.999                         sample              1,800            us/op
+JMHTests.emptySubValue:emptySubValue·p0.9999                        sample             19,072            us/op
+JMHTests.emptySubValue:emptySubValue·p1.00                          sample           1134,592            us/op
+JMHTests.filledSubValue                                             sample  699313      0,399 ±  0,016   us/op
+JMHTests.filledSubValue:filledSubValue·p0.00                        sample              0,300            us/op
+JMHTests.filledSubValue:filledSubValue·p0.50                        sample              0,300            us/op
+JMHTests.filledSubValue:filledSubValue·p0.90                        sample              0,400            us/op
+JMHTests.filledSubValue:filledSubValue·p0.95                        sample              0,500            us/op
+JMHTests.filledSubValue:filledSubValue·p0.99                        sample              1,300            us/op
+JMHTests.filledSubValue:filledSubValue·p0.999                       sample              2,800            us/op
+JMHTests.filledSubValue:filledSubValue·p0.9999                      sample             39,684            us/op
+JMHTests.filledSubValue:filledSubValue·p1.00                        sample           1284,096            us/op
+JMHTests.filledSubValueProvider                                     sample  906435      0,474 ±  0,014   us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p0.00        sample              0,300            us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p0.50        sample              0,400            us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p0.90        sample              0,500            us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p0.95        sample              0,600            us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p0.99        sample              1,500            us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p0.999       sample              3,000            us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p0.9999      sample             36,913            us/op
+JMHTests.filledSubValueProvider:filledSubValueProvider·p1.00        sample           1374,208            us/op
+JMHTests.filledSubValueReflection                                   sample  457585     33,285 ±  0,485   us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p0.00    sample             29,280            us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p0.50    sample             31,680            us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p0.90    sample             32,768            us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p0.95    sample             33,664            us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p0.99    sample             56,960            us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p0.999   sample            200,298            us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p0.9999  sample            912,278            us/op
+JMHTests.filledSubValueReflection:filledSubValueReflection·p1.00    sample          41877,504            us/op
+JMHTests.simpleExpression                                           sample  824005      0,241 ±  0,011   us/op
+JMHTests.simpleExpression:simpleExpression·p0.00                    sample              0,100            us/op
+JMHTests.simpleExpression:simpleExpression·p0.50                    sample              0,200            us/op
+JMHTests.simpleExpression:simpleExpression·p0.90                    sample              0,200            us/op
+JMHTests.simpleExpression:simpleExpression·p0.95                    sample              0,300            us/op
+JMHTests.simpleExpression:simpleExpression·p0.99                    sample              0,800            us/op
+JMHTests.simpleExpression:simpleExpression·p0.999                   sample              1,700            us/op
+JMHTests.simpleExpression:simpleExpression·p0.9999                  sample             19,762            us/op
+JMHTests.simpleExpression:simpleExpression·p1.00                    sample           1175,552            us/op
+JMHTests.simpleRead                                                 sample  695563      0,383 ±  0,011   us/op
+JMHTests.simpleRead:simpleRead·p0.00                                sample              0,300            us/op
+JMHTests.simpleRead:simpleRead·p0.50                                sample              0,300            us/op
+JMHTests.simpleRead:simpleRead·p0.90                                sample              0,400            us/op
+JMHTests.simpleRead:simpleRead·p0.95                                sample              0,400            us/op
+JMHTests.simpleRead:simpleRead·p0.99                                sample              1,400            us/op
+JMHTests.simpleRead:simpleRead·p0.999                               sample              2,700            us/op
+JMHTests.simpleRead:simpleRead·p0.9999                              sample             22,581            us/op
+JMHTests.simpleRead:simpleRead·p1.00                                sample           1047,552            us/op
+JMHTests.emptySubValue                                                  ss      30     27,477 ±  5,543   us/op
+JMHTests.filledSubValue                                                 ss      30     50,290 ± 10,844   us/op
+JMHTests.filledSubValueProvider                                         ss      30     39,940 ±  6,339   us/op
+JMHTests.filledSubValueReflection                                       ss      30    120,360 ± 23,736   us/op
+JMHTests.simpleExpression                                               ss      30     23,840 ±  5,917   us/op
+JMHTests.simpleRead                                                     ss      30     33,360 ± 24,303   us/op

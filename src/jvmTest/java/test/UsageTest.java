@@ -1,12 +1,11 @@
 package test;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import br.com.gamemods.qep.QuickExpressionParser;
 import org.junit.Assert;
 import org.junit.Test;
 
-import br.com.gamemods.qep.QuickExpressionParser;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UsageTest {
 	@Test

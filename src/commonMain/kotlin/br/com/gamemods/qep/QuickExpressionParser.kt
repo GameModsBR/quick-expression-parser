@@ -2,9 +2,7 @@
 
 package br.com.gamemods.qep
 
-import kotlin.jvm.JvmName
-
-
+import java.util.*
 
 private const val EXPECT_IDENTIFIER = 0x1
 private const val EXPECT_OPERATOR = 0x2
@@ -12,8 +10,12 @@ private const val EXPECT_QUESTION = 0x4
 private const val EXPECT_STRING = 0x8
 
 private fun readExpression(
-        open: String?, close: Char?,
-        input: SingleRollbackIterator<Char>, output: StringBuilder, context: ExpressionContext): Boolean {
+    open: String?,
+    close: Char?,
+    input: SingleRollbackIterator<Char>,
+    appender: (Any?) -> Unit,
+    context: ExpressionContext
+): Boolean {
     val fullExpression = StringBuilder()
     open?.let { fullExpression.append(it) }
 
@@ -27,7 +29,7 @@ private fun readExpression(
         when (char) {
             in 'a'..'z', in 'A'..'Z' -> {
                 if (state and EXPECT_IDENTIFIER == 0) {
-                    output.append(fullExpression)
+                    appender(fullExpression)
                     return false
                 }
 
@@ -37,7 +39,7 @@ private fun readExpression(
             }
             '.' -> {
                 if (state and EXPECT_OPERATOR == 0) {
-                    output.append(fullExpression)
+                    appender(fullExpression)
                     return false
                 }
                 tokens += char
@@ -45,7 +47,7 @@ private fun readExpression(
             }
             '?' -> {
                 if (state and EXPECT_QUESTION == 0) {
-                    output.append(fullExpression)
+                    appender(fullExpression)
                     return false
                 }
                 tokens += char
@@ -54,7 +56,7 @@ private fun readExpression(
             }
             ':' -> {
                 if (ifCount-- == 0 || state and EXPECT_QUESTION == 0) {
-                    output.append(fullExpression)
+                    appender(fullExpression)
                     return false
                 }
                 tokens += char
@@ -62,19 +64,22 @@ private fun readExpression(
             }
             '\'', '"' -> {
                 if (state and EXPECT_STRING == 0) {
-                    output.append(fullExpression)
+                    appender(fullExpression)
                     return false
                 }
 
                 val content = StringBuilder().also { readRaw(char, input, it, context) }
                 if (!input.hasNext()) {
-                    output.append(fullExpression).append(content)
+                    appender(fullExpression)
+                    appender(content)
                     return false
                 }
 
                 val stringClose = input.next()
                 if (stringClose != char) {
-                    output.append(fullExpression).append(content).append(stringClose)
+                    appender(fullExpression)
+                    appender(content)
+                    appender(stringClose)
                     return false
                 }
 
@@ -84,38 +89,38 @@ private fun readExpression(
             }
             close -> break@input
             else -> if (!char.isWhitespace()) {
-                output.append(fullExpression)
+                appender(fullExpression)
                 return false
             }
         }
     }
 
     if (state and EXPECT_QUESTION == 0) {
-        output.append(fullExpression)
+        appender(fullExpression)
         return false
     }
 
     if (tokens.size == 1) {
         val token = tokens.first()
         if (token is StringBuilder) {
-            output.append(token)
+            appender(token)
             return true
         }
 
         // Tenta obter o valor do contexto, se não tiver então coloca a expressão inteira na saída
         val value = context.consume(tokens.first().toString())
-        output.append(value ?: fullExpression)
+        appender(value ?: fullExpression)
         return value != null
     }
 
-    return executeExpression(context, tokens, output, fullExpression)
+    return executeExpression(context, tokens, appender, fullExpression)
 }
 
 private fun executeExpression(
-        context: ExpressionContext,
-        tokens: MutableList<Any>,
-        output: StringBuilder,
-        fullExpression: StringBuilder
+    context: ExpressionContext,
+    tokens: MutableList<Any>,
+    appender: (Any?) -> Unit,
+    fullExpression: StringBuilder
 ): Boolean {
     val stack = mutableListOf<Any?>(context)
     val iterator = tokens.iterator()
@@ -123,8 +128,8 @@ private fun executeExpression(
     for (token in iterator) {
         when (token) {
             is String -> {
-                stack += (stack.removeLast() as ExpressionContext).provide(token) ?: output.apply {
-                    append(fullExpression)
+                stack += (stack.removeLast() as ExpressionContext).provide(token) ?: run {
+                    appender(fullExpression)
                     return false
                 }
             }
@@ -134,7 +139,7 @@ private fun executeExpression(
             }
 
             '?' -> {
-                if (!(stack.removeLast() as Parameter).value.toBoolean()) {
+                if (!(stack.removeLast() as Parameter).value(context.locale).toBoolean(context.locale)) {
                     var questionMarks = 1
                     skip@
                     for (skipped in iterator) {
@@ -157,15 +162,25 @@ private fun executeExpression(
             }
 
             else -> {
-                output.append(fullExpression)
+                appender(fullExpression)
                 return false
             }
         }
     }
 
     val param = stack.single() as Parameter
-    output.append(param.value)
+    appender(param.value(context.locale))
     return true
+}
+
+private tailrec fun Any.toBoolean(locale: Locale): Boolean {
+    return when (this) {
+        is Boolean -> this
+        is String -> toBoolean()
+        is LocalizedParameterProvider -> (value(locale) ?: return false).toBoolean(locale)
+        is ParameterProvider -> (value() ?: return false).toBoolean(locale)
+        else -> toString().toBoolean()
+    }
 }
 
 private fun <E> MutableList<E>.removeLast(): E = removeAt(lastIndex)
@@ -191,54 +206,67 @@ private fun readIdentifier(input: SingleRollbackIterator<Char>, output: StringBu
 }
 
 private fun readContext(
-        from: Char?,
-        input: SingleRollbackIterator<Char>,
-        output: StringBuilder,
-        context: ExpressionContext
+    from: Char?,
+    input: SingleRollbackIterator<Char>,
+    appender: (Any?) -> Unit,
+    context: ExpressionContext
 ) {
     if (!input.hasNext()) {
-        output.append(from ?: return)
+        appender(from ?: return)
         return
     }
 
     val first = input.next()
     when (first) {
         '{' -> {
-            readExpression((from?.toString() ?: "") + '{', '}', input, output, context)
+            readExpression((from?.toString() ?: "") + '{', '}', input, appender, context)
         }
         in 'a'..'z', in 'A'..'Z', in '0'..'9' -> {
             val identifier = readIdentifier(input, first)
 
             // Tenta obter o valor do contexto, se não tiver então coloca a expressão inteira na saída
-            context.consume(identifier)?.let { output.append(it) }
-                    ?: output.apply { from?.let { append(it) } }.append(identifier)
+            context.consume(identifier)?.let(appender)
+                    ?: run {
+                        from?.let(appender)
+                        appender(identifier)
+                    }
         }
+        else -> appender(from ?: return)
     }
 }
 
-private fun readEscaped(from: Char?, input: SingleRollbackIterator<Char>, output: StringBuilder) {
+private fun readEscaped(from: Char?, input: SingleRollbackIterator<Char>, appender: (Any?) -> Unit) {
     if (!input.hasNext()) {
-        output.append(from ?: return)
+        appender(from ?: return)
     } else {
-        output.append(input.next())
+        appender(input.next())
     }
+}
+
+internal fun readRaw(
+    ending: Char?,
+    input: SingleRollbackIterator<Char>,
+    output: StringBuilder,
+    context: ExpressionContext
+) = readRaw(ending, input, context) {
+    output.append(it)
 }
 
 internal fun readRaw(
         ending: Char?,
         input: SingleRollbackIterator<Char>,
-        output: StringBuilder,
-        context: ExpressionContext
+        context: ExpressionContext,
+        appender: (Any?) -> Unit
 ) {
     input.forEach {
         when (it) {
-            '#' -> readContext('#', input, output, context)
-            '\\' -> readEscaped('\\', input, output)
+            '#' -> readContext('#', input, appender, context)
+            '\\' -> readEscaped('\\', input, appender)
             ending -> {
                 input.rollback()
                 return
             }
-            else -> output.append(it)
+            else -> appender(it)
         }
     }
 }
